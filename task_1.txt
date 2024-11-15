@@ -1,0 +1,44 @@
+1. Create a folder named log_backup.
+mkdir log_backup
+
+2. Copy all files with the .log extension from C:\Windows\System32\LogFiles (or other log folder) to this folder.
+copy C:\Windows\System32\LogFiles\*.log log_backup\
+
+// Switch to PowerShell for more advanced text processing
+powershell
+
+# 3. Search the copied log files for the word "ERROR" and save the results in a file called found_errors.txt.
+Select-String -Path log_backup\*.log -Pattern "ERROR" | Out-File found_errors.txt
+
+# 4. Search the copied log files for the word "WARNING" and save the results in a file called found_warnings.txt.
+Select-String -Path log_backup\*.log -Pattern "WARNING" | Out-File found_warnings.txt
+
+# 5. Replace all dates and times in found_errors.txt and found_warnings.txt with ****.
+# Assuming dates in the format YYYY-MM-DDTHH:MM:SS.*
+(Get-Content found_errors.txt) -replace "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+", "****T****.***" | Set-Content found_errors.txt
+(Get-Content found_warnings.txt) -replace "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+", "****T****.***" | Set-Content found_warnings.txt
+
+# 6. Create an archive (a compressed file) containing both found_errors.txt and found_warnings.txt.
+Compress-Archive -Path found_errors.txt, found_warnings.txt -DestinationPath log_findings_archive.zip
+
+# Exit PowerShell back to Command Prompt
+exit
+
+7. Go to your Git repository.
+cd path\to\your\git\repository
+
+8. Fetch the latest version of the main branch.
+git fetch origin main
+
+9. Create a new git branch.
+git checkout -b log_findings_branch
+
+10. Commit the archive to this new branch and push changes to the remote branch.
+git add log_findings_archive.zip
+git commit -m "Add archive of log findings"
+git push -u origin log_findings_branch
+
+11. Delete the branch locally and on the remote repository.
+git checkout main
+git branch -d log_findings_branch
+git push origin --delete log_findings_branch
